@@ -1,5 +1,6 @@
 package com.example.downloader.downloader
 
+import android.util.Log
 import com.example.downloader.data.model.VideoInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,5 +37,11 @@ class FastMetadataFetcher {
         }
 
     private fun callObject(target: Any, methodName: String): Any? =
-        runCatching { target.javaClass.getMethod(methodName).invoke(target) }.getOrNull()
+        runCatching { target.javaClass.getMethod(methodName).invoke(target) }
+            .onFailure { Log.d(TAG, "Method unavailable: $methodName") }
+            .getOrNull()
+
+    private companion object {
+        const val TAG = "FastMetadataFetcher"
+    }
 }

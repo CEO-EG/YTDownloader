@@ -21,8 +21,8 @@ class DownloadWorker(
         val title = inputData.getString(KEY_TITLE).orEmpty().ifBlank { "download" }
         val extension = inputData.getString(KEY_EXTENSION).orEmpty().ifBlank { "mp4" }
 
-        val downloadDir = File(applicationContext.cacheDir, "active_downloads").apply { mkdirs() }
-        val outputTemplate = File(downloadDir, "${title}_%(id)s.%(ext)s").absolutePath
+        val downloadDir = File(applicationContext.cacheDir, "active_downloads/$id").apply { mkdirs() }
+        val outputTemplate = File(downloadDir, "media.%(ext)s").absolutePath
         val request = YoutubeDLRequest(url).apply {
             addOption("-f", formatId)
             addOption("-o", outputTemplate)
@@ -34,13 +34,22 @@ class DownloadWorker(
             YoutubeDL.getInstance().execute(request)
             setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 95).build())
 
-            val latestFile = downloadDir.listFiles()?.maxByOrNull { it.lastModified() }
+            val latestFile = downloadDir.listFiles()?.firstOrNull()
                 ?: error("No downloaded file found")
             val finalFile = FFmpegManager().mergeIfNeeded(latestFile, null).getOrThrow()
             MediaStoreManager(applicationContext).saveDownload(finalFile, title, extension).getOrThrow()
             setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 100).build())
             Result.success()
-        }.getOrElse { Result.failure() }
+        }.getOrElse {
+            Result.failure(
+                Data.Builder()
+                    .putString(KEY_URL, url)
+                    .putString(KEY_FORMAT_ID, formatId)
+                    .putString(KEY_TITLE, title)
+                    .putString(KEY_EXTENSION, extension)
+                    .build()
+            )
+        }
     }
 
     companion object {

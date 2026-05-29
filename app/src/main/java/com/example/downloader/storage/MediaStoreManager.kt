@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.Environment
 import android.provider.MediaStore
+import android.webkit.MimeTypeMap
 import java.io.File
 import java.io.FileInputStream
 
@@ -12,7 +13,9 @@ class MediaStoreManager(
 ) {
     fun saveDownload(source: File, displayName: String, extension: String): Result<Unit> = runCatching {
         val relativePath = "${Environment.DIRECTORY_DOWNLOADS}/YTDownloader"
-        val mimeType = if (extension.lowercase() == "mp3") "audio/mpeg" else "video/mp4"
+        val mimeType = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(extension.lowercase())
+            ?: if (extension.lowercase() in setOf("m4a", "opus", "mp3")) "audio/*" else "video/*"
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, "$displayName.$extension")
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)

@@ -7,6 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class FormatFetcher {
+    private val qualityRegex = Regex("\\b(\\d+p|\\d+x\\d+)\\b")
+
     suspend fun fetch(url: String): Result<List<VideoFormat>> = withContext(Dispatchers.IO) {
         runCatching {
             val request = YoutubeDLRequest(url).apply {
@@ -26,7 +28,7 @@ class FormatFetcher {
             if (parts.size < 3) return@mapNotNull null
             val formatId = parts[0]
             val extension = parts[1]
-            val quality = parts.firstOrNull { it.contains("p") || it.contains("x") } ?: "unknown"
+            val quality = qualityRegex.find(line)?.value ?: "unknown"
             val lower = line.lowercase()
             val type = when {
                 "audio only" in lower -> "audio"

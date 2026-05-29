@@ -22,7 +22,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
         ElevatedCard {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Download folder: ${state.downloadFolder}")
-                Text("Theme: Dark")
+                Text("Theme: ${if (state.darkTheme) "Dark" else "Light"}")
             }
         }
         ElevatedCard {

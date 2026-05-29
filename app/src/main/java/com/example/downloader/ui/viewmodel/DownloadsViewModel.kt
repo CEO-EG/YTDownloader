@@ -48,4 +48,5 @@ class DownloadsViewModel(app: Application) : AndroidViewModel(app) {
 
 private fun WorkInfo.toWorkRequest() = androidx.work.OneTimeWorkRequestBuilder<com.example.downloader.workers.DownloadWorker>()
     .setInputData(this.outputData)
+    .addTag(DownloadWorker.TAG)
     .build()
