@@ -1,137 +1,97 @@
 package com.example.downloader.ui.screens.details
 
-import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.downloader.data.model.VideoInfo
-import com.example.downloader.downloader.MetadataFetcher
-
+import com.example.downloader.data.model.VideoFormat
+import com.example.downloader.ui.viewmodel.DetailsViewModel
 
 @Composable
 fun DetailsScreen(
-    url: String
+    url: String,
+    viewModel: DetailsViewModel = viewModel()
 ) {
-
-    val context = LocalContext.current
-
-    val metadataFetcher = remember {
-        MetadataFetcher(context)
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(url) {
+        viewModel.loadMetadata(url)
     }
-
-    val videoInfoState = remember {
-        mutableStateOf<VideoInfo?>(null)
+    LaunchedEffect(url) {
+        viewModel.loadFormats(url)
     }
-
-    val loadingState = remember {
-        mutableStateOf(true)
-    }
-
-    val errorState = remember {
-        mutableStateOf<String?>(null)
-    }
-
-    LaunchedEffect(Unit) {
-
-        val result = metadataFetcher.fetch(url)
-
-        result.onSuccess {
-
-            videoInfoState.value = it
-            Log.d("DetailsScreen", "Fetched video info: $it")
-
-            loadingState.value = false
-
-        }.onFailure {
-
-            errorState.value = it.message
-
-            loadingState.value = false
-        }
-    }
-
-    if (loadingState.value) {
-
-        Column(
-            modifier = Modifier.fillMaxSize(),
-
-            verticalArrangement = Arrangement.Center,
-
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
+    if (state.loadingMetadata && state.videoInfo == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
             CircularProgressIndicator()
         }
-
         return
     }
+    if (state.error != null && state.videoInfo == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Text(text = state.error ?: "Unknown error")
+        }
+        return
+    }
+    val videoInfo = state.videoInfo ?: return
 
-    if (errorState.value != null) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-
-            verticalArrangement = Arrangement.Center,
-
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            Text(
-                text = errorState.value ?: "Unknown error"
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            ElevatedCard(shape = MaterialTheme.shapes.large) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AsyncImage(
+                        model = videoInfo.thumbnail,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth().height(220.dp)
+                    )
+                    Text(videoInfo.title, style = MaterialTheme.typography.titleLarge)
+                    Text("Duration: ${videoInfo.duration}s")
+                    Text("Channel: ${videoInfo.channelName}")
+                    Text("Views: ${videoInfo.views}")
+                }
+            }
+        }
+        item {
+            Text("Formats", style = MaterialTheme.typography.titleMedium)
+        }
+        if (state.loadingFormats) {
+            item { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) }
+        }
+        items(state.formats, key = { it.formatId }) { format ->
+            FormatRow(
+                format = format,
+                selected = state.selectedFormat?.formatId == format.formatId,
+                onClick = { viewModel.selectFormat(format) }
             )
         }
-
-        return
+        item {
+            Button(
+                onClick = { viewModel.download(url) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.selectedFormat != null
+            ) { Text("Download") }
+        }
     }
+}
 
-    val videoInfo = videoInfoState.value ?: return
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+@Composable
+private fun FormatRow(format: VideoFormat, selected: Boolean, onClick: () -> Unit) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
-
-        AsyncImage(
-            model = videoInfo.thumbnail,
-            contentDescription = null,
-
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = videoInfo.title ?: "No Title",
-
-            style = MaterialTheme.typography.headlineSmall
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "Duration: ${videoInfo.duration ?: 0} sec"
-        )
+        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(format.quality)
+            Text("${format.extension} • ${format.type}")
+        }
     }
 }

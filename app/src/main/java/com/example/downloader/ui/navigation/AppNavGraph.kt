@@ -8,7 +8,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.downloader.ui.screens.details.DetailsScreen
+import com.example.downloader.ui.screens.downloads.DownloadsScreen
 import com.example.downloader.ui.screens.home.HomeScreen
+import com.example.downloader.ui.screens.settings.SettingsScreen
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -32,7 +34,9 @@ fun AppNavGraph() {
                     navController.navigate(
                         "${Routes.Details.route}?url=$encodedUrl"
                     )
-                }
+                },
+                onDownloadsClick = { navController.navigate(Routes.Downloads.route) },
+                onSettingsClick = { navController.navigate(Routes.Settings.route) }
             )
         }
 
@@ -55,6 +59,14 @@ fun AppNavGraph() {
             DetailsScreen(
                 url = url
             )
+        }
+
+        composable(route = Routes.Downloads.route) {
+            DownloadsScreen()
+        }
+
+        composable(route = Routes.Settings.route) {
+            SettingsScreen()
         }
     }
 }

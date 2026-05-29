@@ -1,18 +1,21 @@
 [versions]
-agp = "9.2.1"
-coreKtx = "1.18.0"
+agp = "8.7.3"
+coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-lifecycleRuntimeKtx = "2.10.0"
-activityCompose = "1.13.0"
-kotlin = "2.3.21"
-composeBom = "2026.05.01"
-composeNavigation = "2.9.0"
-lifecycle = "2.9.0"
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.9.3"
+kotlin = "2.0.21"
+composeBom = "2024.10.01"
+composeNavigation = "2.8.3"
+lifecycle = "2.8.7"
 okhttp = "4.12.0"
-kotlinSerialization = "1.9.0"
+kotlinSerialization = "1.7.3"
 coil = "2.7.0"
+workManager = "2.10.0"
+newPipeExtractor = "v0.24.6"
+exoplayer = "1.4.1"
 
 
 
@@ -36,8 +39,15 @@ androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-
 squareup-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
+androidx-work-runtime-compose = { module = "androidx.work:work-runtime-compose", version.ref = "workManager" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+newpipe-extractor = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newPipeExtractor" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "exoplayer" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-
