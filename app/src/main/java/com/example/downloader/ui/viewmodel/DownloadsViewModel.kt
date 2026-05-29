@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.downloader.workers.DownloadWorker
@@ -40,7 +41,8 @@ class DownloadsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun retry(id: UUID) {
-        workManager.getWorkInfoByIdLiveData(id).value?.let { info ->
+        viewModelScope.launch {
+            val info = workManager.getWorkInfoById(id) ?: return@launch
             if (info.outputData.hasRetryInput()) {
                 workManager.enqueue(info.toWorkRequest())
             }

@@ -1,6 +1,7 @@
 package com.example.downloader.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -40,7 +41,8 @@ class DownloadWorker(
             MediaStoreManager(applicationContext).saveDownload(finalFile, title, extension).getOrThrow()
             setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 100).build())
             return Result.success()
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            Log.e(TAG, "Download failed", error)
             return Result.failure(
                 Data.Builder()
                     .putString(KEY_URL, url)

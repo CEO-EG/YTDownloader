@@ -14,7 +14,7 @@ class MediaStoreManager(
     private val fallbackMimeMap = mapOf(
         "mp3" to "audio/mpeg",
         "m4a" to "audio/mp4",
-        "opus" to "audio/ogg",
+        "opus" to "audio/opus",
         "webm" to "video/webm",
         "mkv" to "video/x-matroska",
         "mp4" to "video/mp4"
