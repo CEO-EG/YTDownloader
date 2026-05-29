@@ -4,15 +4,16 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.downloader.workers.DownloadWorker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 data class DownloadsUiState(
@@ -42,7 +43,7 @@ class DownloadsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun retry(id: UUID) {
         viewModelScope.launch {
-            val info = workManager.getWorkInfoById(id) ?: return@launch
+            val info = withContext(Dispatchers.IO) { workManager.getWorkInfoById(id).get() } ?: return@launch
             if (info.outputData.hasRetryInput()) {
                 workManager.enqueue(info.toWorkRequest())
             }

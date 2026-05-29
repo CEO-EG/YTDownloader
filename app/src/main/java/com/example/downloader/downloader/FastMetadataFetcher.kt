@@ -12,7 +12,8 @@ class FastMetadataFetcher {
     suspend fun fetch(url: String): Result<VideoInfo> = withContext(Dispatchers.IO) {
         runCatching {
             val service = NewPipe.getService(ServiceList.YouTube.serviceId)
-            val extractor = service.streamExtractorFactory.getExtractor(url) as StreamExtractor
+            val extractor = service.streamExtractorFactory.getExtractor(url) as? StreamExtractor
+                ?: error("Unsupported stream URL")
             extractor.fetchPage()
 
             VideoInfo(
