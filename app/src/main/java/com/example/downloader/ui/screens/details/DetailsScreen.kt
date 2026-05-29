@@ -12,7 +12,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.downloader.data.model.VideoFormat
 import com.example.downloader.ui.viewmodel.DetailsViewModel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 @Composable
 fun DetailsScreen(
@@ -21,8 +22,12 @@ fun DetailsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(url) {
-        launch { viewModel.loadMetadata(url) }
-        launch { viewModel.loadFormats(url) }
+        coroutineScope {
+            val metadata = async { viewModel.loadMetadata(url) }
+            val formats = async { viewModel.loadFormats(url) }
+            metadata.await()
+            formats.await()
+        }
     }
     if (state.loadingMetadata && state.videoInfo == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {

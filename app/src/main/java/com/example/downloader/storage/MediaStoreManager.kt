@@ -11,11 +11,21 @@ import java.io.FileInputStream
 class MediaStoreManager(
     private val context: Context
 ) {
+    private val fallbackMimeMap = mapOf(
+        "mp3" to "audio/mpeg",
+        "m4a" to "audio/mp4",
+        "opus" to "audio/ogg",
+        "webm" to "video/webm",
+        "mkv" to "video/x-matroska",
+        "mp4" to "video/mp4"
+    )
+
     fun saveDownload(source: File, displayName: String, extension: String): Result<Unit> = runCatching {
         val relativePath = "${Environment.DIRECTORY_DOWNLOADS}/YTDownloader"
         val mimeType = MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(extension.lowercase())
-            ?: if (extension.lowercase() in setOf("m4a", "opus", "mp3")) "audio/*" else "video/*"
+            ?: fallbackMimeMap[extension.lowercase()]
+            ?: "application/octet-stream"
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, "$displayName.$extension")
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)

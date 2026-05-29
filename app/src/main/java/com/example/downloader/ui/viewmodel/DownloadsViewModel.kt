@@ -41,7 +41,9 @@ class DownloadsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun retry(id: UUID) {
         workManager.getWorkInfoByIdLiveData(id).value?.let { info ->
-            workManager.enqueue(info.toWorkRequest())
+            if (info.outputData.hasRetryInput()) {
+                workManager.enqueue(info.toWorkRequest())
+            }
         }
     }
 }
@@ -50,3 +52,7 @@ private fun WorkInfo.toWorkRequest() = androidx.work.OneTimeWorkRequestBuilder<c
     .setInputData(this.outputData)
     .addTag(DownloadWorker.TAG)
     .build()
+
+private fun androidx.work.Data.hasRetryInput(): Boolean =
+    getString(DownloadWorker.KEY_URL) != null &&
+        getString(DownloadWorker.KEY_FORMAT_ID) != null

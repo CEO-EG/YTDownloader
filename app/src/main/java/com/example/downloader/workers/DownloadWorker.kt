@@ -30,7 +30,7 @@ class DownloadWorker(
             addOption("--newline")
         }
 
-        return runCatching {
+        try {
             YoutubeDL.getInstance().execute(request)
             setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 95).build())
 
@@ -39,9 +39,9 @@ class DownloadWorker(
             val finalFile = FFmpegManager().mergeIfNeeded(latestFile, null).getOrThrow()
             MediaStoreManager(applicationContext).saveDownload(finalFile, title, extension).getOrThrow()
             setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 100).build())
-            Result.success()
-        }.getOrElse {
-            Result.failure(
+            return Result.success()
+        } catch (_: Exception) {
+            return Result.failure(
                 Data.Builder()
                     .putString(KEY_URL, url)
                     .putString(KEY_FORMAT_ID, formatId)
@@ -49,6 +49,8 @@ class DownloadWorker(
                     .putString(KEY_EXTENSION, extension)
                     .build()
             )
+        } finally {
+            downloadDir.deleteRecursively()
         }
     }
 
