@@ -24,23 +24,48 @@ class DownloadWorker(
 
         val downloadDir = File(applicationContext.cacheDir, "active_downloads/$id").apply { mkdirs() }
         val outputTemplate = File(downloadDir, "media.%(ext)s").absolutePath
+        
+        setProgress(Data.Builder()
+            .putInt(KEY_PROGRESS, 0)
+            .putString(KEY_TITLE, title)
+            .build())
+
         val request = YoutubeDLRequest(url).apply {
             addOption("-f", formatId)
             addOption("-o", outputTemplate)
             addOption("--no-playlist")
-            addOption("--newline")
+            addOption("--no-update")
         }
 
         try {
-            YoutubeDL.getInstance().execute(request)
-            setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 95).build())
+            YoutubeDL.getInstance().execute(request) { progress, _, line ->
+                Log.d(TAG, "Progress: $progress, Line: $line")
+                if (progress > 0f) {
+                    setProgressAsync(Data.Builder()
+                        .putInt(KEY_PROGRESS, progress.toInt())
+                        .putString(KEY_TITLE, title)
+                        .build())
+                }
+            }
+            
+            setProgress(Data.Builder()
+                .putInt(KEY_PROGRESS, 95)
+                .putString(KEY_TITLE, title)
+                .build())
 
             val latestFile = downloadDir.listFiles()?.firstOrNull()
                 ?: error("No downloaded file found")
             val finalFile = FFmpegManager().mergeIfNeeded(latestFile, null).getOrThrow()
             MediaStoreManager(applicationContext).saveDownload(finalFile, title, extension).getOrThrow()
-            setProgressAsync(Data.Builder().putInt(KEY_PROGRESS, 100).build())
-            return Result.success()
+            
+            setProgress(Data.Builder()
+                .putInt(KEY_PROGRESS, 100)
+                .putString(KEY_TITLE, title)
+                .build())
+                
+            return Result.success(Data.Builder()
+                .putString(KEY_TITLE, title)
+                .build())
         } catch (error: Exception) {
             Log.e(TAG, "Download failed", error)
             return Result.failure(

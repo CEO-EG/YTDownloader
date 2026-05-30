@@ -57,16 +57,22 @@ fun AppNavGraph() {
                 ?: ""
 
             DetailsScreen(
-                url = url
+                url = url,
+                onBack = { navController.popBackStack() },
+                onDownloadStarted = {
+                    navController.navigate(Routes.Downloads.route) {
+                        popUpTo(Routes.Home.route)
+                    }
+                }
             )
         }
 
         composable(route = Routes.Downloads.route) {
-            DownloadsScreen()
+            DownloadsScreen(onBack = { navController.popBackStack() })
         }
 
         composable(route = Routes.Settings.route) {
-            SettingsScreen()
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

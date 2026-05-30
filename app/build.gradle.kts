@@ -7,11 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.downloader"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 35
     packaging {
 
         jniLibs {
@@ -23,7 +19,7 @@ android {
     defaultConfig {
         applicationId = "com.example.downloader"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         ndk {
@@ -59,6 +55,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -77,9 +74,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.work.runtime.compose)
     implementation(libs.squareup.okhttp)
-    implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
+    implementation(libs.youtubedl.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
     implementation(libs.newpipe.extractor)

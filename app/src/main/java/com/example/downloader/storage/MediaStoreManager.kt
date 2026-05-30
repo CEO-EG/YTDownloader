@@ -2,6 +2,7 @@ package com.example.downloader.storage
 
 import android.content.ContentValues
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
@@ -21,21 +22,33 @@ class MediaStoreManager(
     )
 
     fun saveDownload(source: File, displayName: String, extension: String): Result<Unit> = runCatching {
-        val relativePath = "${Environment.DIRECTORY_DOWNLOADS}/YTDownloader"
         val mimeType = MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(extension.lowercase())
             ?: fallbackMimeMap[extension.lowercase()]
             ?: "application/octet-stream"
+
+        val (collection, relativePath) = when {
+            mimeType.startsWith("audio") -> {
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI to "${Environment.DIRECTORY_MUSIC}/YTDownloader"
+            }
+            mimeType.startsWith("video") -> {
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI to "${Environment.DIRECTORY_MOVIES}/YTDownloader"
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI to "${Environment.DIRECTORY_DOWNLOADS}/YTDownloader"
+            }
+            else -> {
+                // Fallback for older versions, though RELATIVE_PATH won't be used
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI to "${Environment.DIRECTORY_MOVIES}/YTDownloader"
+            }
+        }
+
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, "$displayName.$extension")
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
-        }
-
-        val collection = if (mimeType.startsWith("audio")) {
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        } else {
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+            }
         }
 
         val uri = context.contentResolver.insert(collection, values)
