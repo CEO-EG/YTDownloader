@@ -30,11 +30,18 @@ class DownloadWorker(
             .putString(KEY_TITLE, title)
             .build())
 
+        val finalFormat = formatId
+
         val request = YoutubeDLRequest(url).apply {
-            addOption("-f", formatId)
+            addOption("-f", finalFormat)
             addOption("-o", outputTemplate)
             addOption("--no-playlist")
-            addOption("--no-update")
+            addOption("--extractor-args", "youtube:player_client=android_web_no_sabr,web_embedded")
+            addOption("--no-check-certificate")
+            addOption("--geo-bypass")
+            addOption("--check-formats")
+            addOption("--downloader", "aria2c")
+            addOption("--external-downloader-args", "aria2c:--summary-interval=1")
         }
 
         try {

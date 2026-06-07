@@ -24,7 +24,7 @@ android {
         versionName = "1.0"
         ndk {
 
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("armeabi-v7a","x86_64")
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -76,6 +76,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.squareup.okhttp)
     implementation(libs.youtubedl.android)
+    implementation(libs.youtubedl.android.ffmpeg)
+    implementation(libs.youtubedl.android.aria2c)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
     implementation(libs.newpipe.extractor)
